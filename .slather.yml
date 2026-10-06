@@ -1,0 +1,12 @@
+coverage_service: html
+use_xcresult: true
+xcodeproj: BasicCapabilityBasedDemo.xcodeproj
+scheme: BasicCapabilityBasedDemo
+workspace: null
+source_directory: BasicCapabilityBasedDemo
+output_directory: coverage
+coverage_threshold: 80
+show: true
+ignore:
+  - Carthage/*
+  - DerivedData/*

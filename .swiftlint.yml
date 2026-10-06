@@ -1,0 +1,26 @@
+# Paths
+included:
+  - BasicCapabilityBasedDemo
+excluded:
+  - Carthage
+  - build
+  - DerivedData
+
+# Rules
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - force_unwrapping
+  - vertical_whitespace
+
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+
+# Severity tuning
+force_cast: warning
+force_try: warning
+
+# Analyzer rules (optional but recommended)
+analyzer_rules:
+  - explicit_self

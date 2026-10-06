@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.00018">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="01: Switch to ios fetch_dependencies lane" time="6.2e-05">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="02: xcodebuild -resolvePackageDependencies -project /Users/ronakmalick/Development/Prep/BasicCapabilityBasedDemo/BasicCapabilityBasedDemo.xcodeproj -scheme BasicCapabilityBasedDemo" time="1.118877">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="03: Switch to ios run_swiftlint lane" time="0.000102">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="04: swiftlint lint --config ../.swiftlint.yml --reporter json &gt; swiftlint.json" time="0.52885">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="05: Switch to ios run_tests_with_coverage lane" time="0.000119">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="06: run_tests" time="53.988832">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="07: cd /Users/ronakmalick/Development/Prep/BasicCapabilityBasedDemo &amp;&amp; bundle exec slather coverage --verbose" time="3.363918">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="08: Switch to ios print_total_coverage lane" time="0.000108">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="09: shell command" time="0.668853">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="10: Switch to ios qa_ipa lane" time="0.000115">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="11: match" time="17.668631">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

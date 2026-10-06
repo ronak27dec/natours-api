@@ -1,0 +1,11 @@
+[
+  {
+    "character" : 9,
+    "file" : "/Users/ronakmalick/Development/Prep/BasicCapabilityBasedDemo/BasicCapabilityBasedDemo/CapabilityCore/Capability.swift",
+    "line" : 23,
+    "reason" : "Setter value is not used",
+    "rule_id" : "unused_setter_value",
+    "severity" : "Warning",
+    "type" : "Unused Setter Value"
+  }
+]

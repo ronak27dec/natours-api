@@ -1,0 +1,125 @@
+default_platform(:ios)
+
+PROJECT_PATH = File.expand_path("../BasicCapabilityBasedDemo.xcodeproj", __dir__)
+SCHEME_NAME  = "BasicCapabilityBasedDemo"
+
+require 'yaml'
+
+def slather_coverage_threshold
+  config_path = File.expand_path("../.slather.yml", __dir__)
+  UI.user_error!("slather.yml not found") unless File.exist?(config_path)
+  config = YAML.load_file(config_path)
+  threshold = config["coverage_threshold"]
+  UI.user_error!("coverage_threshold not defined in slather.yml") unless threshold
+  threshold.to_f
+end
+
+platform :ios do
+  desc "Local dev lane: fetch deps, lint, test, coverage"
+  lane :dev do
+    fetch_dependencies
+    run_swiftlint
+    run_tests_with_coverage
+    print_total_coverage
+    qa_ipa
+  end
+
+  desc "Build Debug/QA IPA for local QA"
+  lane :qa_ipa do
+  UI.message("Building Debug IPA for QA...")
+  match(
+    type: "adhoc",
+    readonly: false
+  )
+  build_app(
+    project: PROJECT_PATH,
+    scheme: SCHEME_NAME,
+    configuration: "Debug",
+    export_method: "ad-hoc",
+    output_directory: "fastlane/qa_build",
+    output_name: "BasicCapabilityBasedDemo-QA.ipa",
+    clean: true,
+    include_symbols: true,
+    include_bitcode: false
+  )
+  UI.success("QA IPA generated successfully")
+end
+
+
+  desc "SwiftLint auto-fix"
+  lane :format do
+    UI.message("Running SwiftLint auto-fix...")
+    sh("cd #{File.expand_path('..', __dir__)} && swiftlint --fix")
+  end
+
+  desc "Run tests only with coverage"
+  lane :test_only do
+    UI.message("Running tests only...")
+    run_tests_with_coverage
+  end
+
+  private_lane :fetch_dependencies do
+    UI.message("Fetching dependencies...")
+    sh("xcodebuild -resolvePackageDependencies -project #{PROJECT_PATH} -scheme #{SCHEME_NAME}")
+    if File.exist?("../Cartfile")
+      sh("cd .. && carthage bootstrap --use-xcframeworks --platform iOS")
+    end
+  end
+
+  private_lane :run_swiftlint do
+    UI.message("Running SwiftLint with rule budgets...")
+    sh("swiftlint lint --config ../.swiftlint.yml --reporter json > swiftlint.json")
+
+    require 'json'
+    report = JSON.parse(File.read("swiftlint.json"))
+    budgets = { "unused_setter_value" => 1 }
+    counts = Hash.new(0)
+
+    report.each { |v| counts[v["rule_id"]] += 1 }
+
+    budgets.each do |rule, max|
+      UI.user_error!("Rule '#{rule}' exceeded budget (#{counts[rule]}/#{max})") if counts[rule] > max
+    end
+  end
+
+  private_lane :run_tests_with_coverage do
+    UI.message("Running tests with coverage and generating report...")
+
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      devices: ["iPhone 17 Pro"],
+      clean: true,
+      code_coverage: true,
+      result_bundle: true,
+      output_directory: "fastlane/test_output",
+      output_types: "xcresult"
+    )
+
+    sh("cd #{File.expand_path('..', __dir__)} && bundle exec slather coverage --verbose")
+  end
+
+  private_lane :print_total_coverage do
+    UI.message("Calculating total code coverage...")
+    xcresult = Actions.lane_context[Actions::SharedValues::SCAN_GENERATED_XCRESULT_PATH]
+    UI.user_error!("xcresult not found") unless xcresult && File.exist?(xcresult)
+    coverage = sh(
+      <<~BASH,
+        set -e
+        xcrun xccov view --report --json "#{xcresult}" \
+          | ruby -rjson -e '
+            data = JSON.parse(STDIN.read)
+            puts (data["lineCoverage"] * 100).round(2)
+          '
+      BASH
+      log: false
+    ).strip
+
+    UI.user_error!("Failed to extract coverage from xcresult") if coverage.empty?
+    coverage_value = coverage.to_f
+    threshold = slather_coverage_threshold
+    UI.user_error!("Coverage below threshold: #{coverage_value}% < #{threshold}%") if coverage_value < threshold
+    UI.success("Total Coverage: #{coverage_value}% (threshold: #{threshold}%)")
+  end
+
+end
